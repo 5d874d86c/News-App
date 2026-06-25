@@ -17,7 +17,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y unzip
 
     - name: ZIP Datei entpacken
-      run: unzip News-App.zip -d .
+      run: unzip radar-rss.zip -d .
 
     - name: Richtigen Ordner finden und Rechte vergeben
       run: |
