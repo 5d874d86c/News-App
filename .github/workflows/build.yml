@@ -1,0 +1,45 @@
+name: APK Schnellbau
+on: [push]
+
+jobs:
+build:
+runs-on: ubuntu-latest
+steps:
+- uses: actions/checkout@v4
+
+- name: Set up JDK 17
+uses: actions/setup-java@v4
+with:
+java-version: '17'
+distribution: 'temurin'
+
+- name: Entpack-Programm installieren
+run: sudo apt-get update && sudo apt-get install -y unzip
+
+- name: ZIP Datei entpacken
+run: unzip Schulplaner.zip -d .
+
+- name: Richtigen Ordner finden und Rechte vergeben
+run: |
+GRADLEW_PATH= GRADLEW_PATH" ]; then
+echo "Fehler: gradlew wurde nirgends gefunden!"
+exit 1
+fi
+DIR_PATH= GRADLEW_PATH")
+echo "Projekt-Ordner gefunden in:  GRADLEW_PATH"
+echo "PROJECT_DIR= GITHUB_ENV
+
+- name: Setup Gradle
+uses: gradle/actions/setup-gradle@v3
+
+- name: APK bauen
+run: |
+cd ${{ env.PROJECT_DIR }}
+./gradlew assembleDebug
+
+- name: APK bereitstellen
+uses: actions/upload-artifact@v4
+with:
+name: Schulplaner-APK
+path: |
+**/build/outputs/apk/debug/app-debug.apk
