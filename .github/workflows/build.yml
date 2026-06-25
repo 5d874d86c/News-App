@@ -19,17 +19,28 @@ jobs:
     - name: ZIP Datei entpacken
       run: unzip radar-rss.zip -d .
 
-    - name: Richtigen Ordner finden und Rechte vergeben
+    - name: Fehlende Gradle-Wrapper-Dateien erzwingen
       run: |
-        GRADLEW_PATH=$(find . -name gradlew)
-        if [ -z "$GRADLEW_PATH" ]; then
-          echo "Fehler: gradlew wurde nirgends gefunden!"
+        # Wir suchen zuerst nach einem build.gradle oder settings.gradle Ordner
+        BUILD_GRADLE_PATH=$(find . -name "build.gradle*" | head -n 1)
+        if [ -z "$BUILD_GRADLE_PATH" ]; then
+          echo "Kritischer Fehler: Keine build.gradle gefunden. Ist das ein Android Projekt?"
           exit 1
         fi
-        DIR_PATH=$(dirname "$GRADLEW_PATH")
-        echo "Projekt-Ordner gefunden in: $DIR_PATH"
+        TARGET_DIR=$(dirname "$BUILD_GRADLE_PATH")
+        echo "Android-Projekt gefunden in: $TARGET_DIR"
+        
+        # Falls kein gradlew da ist, generieren wir eins!
+        if [ ! -f "$TARGET_DIR/gradlew" ]; then
+          echo "gradlew fehlt! Generiere neue Gradle-Wrapper-Dateien..."
+          cd "$TARGET_DIR"
+          gradle wrapper --gradle-version 8.0
+          cd -
+        fi
+        
+        GRADLEW_PATH=$(find . -name gradlew)
         chmod +x "$GRADLEW_PATH"
-        echo "PROJECT_DIR=$DIR_PATH" >> $GITHUB_ENV
+        echo "PROJECT_DIR=$(dirname "$GRADLEW_PATH")" >> $GITHUB_ENV
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
@@ -45,3 +56,4 @@ jobs:
         name: News-App-APK
         path: |
           **/build/outputs/apk/debug/app-debug.apk
+
